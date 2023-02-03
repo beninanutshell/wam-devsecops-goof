@@ -1,0 +1,50 @@
+steps:
+  - name: "snyk/snyk-cli:npm"
+    args:
+      - "-c"
+      - |-
+        snyk config set api=${_SNYK_TOKEN}
+        snyk test --severity-threshold=medium || true
+    id: Snyk Open Source Test
+    entrypoint: bash
+  - name: "snyk/snyk-cli:npm"
+    args:
+      - "-c"
+      - |-
+        snyk config set api=${_SNYK_TOKEN}
+        snyk code test --severity-threshold=medium || true
+    id: Snyk Code Test
+    entrypoint: bash
+  - name: "snyk/snyk-cli:npm"
+    args:
+      - "-c"
+      - >-
+        snyk config set api=${_SNYK_TOKEN}  snyk container test
+        --severity-threshold=medium jiajunngjj/docker-goof:latest || true
+    id: Snyk Container Test
+    entrypoint: bash
+  - name: "snyk/snyk-cli:npm"
+    args:
+      - "-c"
+      - |-
+        snyk config set api=${_SNYK_TOKEN}
+        snyk iac test --severity-threshold=medium iac/ || true
+    id: Snyk IaC Test
+    entrypoint: bash
+  - name: "snyk/snyk-cli:npm"
+    args:
+      - "-c"
+      - >-
+        snyk config set api=${_SNYK_TOKEN}
+
+        set -o pipefail
+
+        snyk test --severity-threshold=medium --json | snyk-to-html -o
+        results.html || true
+    id: Create HTML artifact
+    entrypoint: bash
+artifacts:
+  objects:
+    location: "gs://s4a-gcs-eu1-snyk-reports/snyk/scan_output"
+    paths:
+      - results.html
